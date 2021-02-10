@@ -4,6 +4,7 @@ import sys
 
 import click
 import utilities_common.cli as clicommon
+from natsort import natsorted
 from sonic_py_common import multi_asic
 from swsscommon import swsscommon
 from swsssdk import ConfigDBConnector
@@ -190,7 +191,7 @@ def status(port, json_output):
             port_status_dict["MUX_CABLE"] = {}
             for namespace in namespaces:
                 asic_id = multi_asic.get_asic_index_from_namespace(namespace)
-                for key in port_table_keys[asic_id]:
+                for key in natsorted(port_table_keys[asic_id]):
                     port = key.split("|")[1]
                     muxcable_info_dict[asic_id] = per_npu_statedb[asic_id].get_all(
                         per_npu_statedb[asic_id].STATE_DB, 'MUX_CABLE_TABLE|{}'.format(port))
@@ -201,7 +202,7 @@ def status(port, json_output):
             print_data = []
             for namespace in namespaces:
                 asic_id = multi_asic.get_asic_index_from_namespace(namespace)
-                for key in port_table_keys[asic_id]:
+                for key in natsorted(port_table_keys[asic_id]):
                     port = key.split("|")[1]
                     muxcable_info_dict[asic_id] = per_npu_statedb[asic_id].get_all(
                         per_npu_statedb[asic_id].STATE_DB, 'MUX_CABLE_TABLE|{}'.format(port))
@@ -317,7 +318,7 @@ def config(port, json_output):
             port_status_dict["MUX_CABLE"]["PORTS"] = {}
             for namespace in namespaces:
                 asic_id = multi_asic.get_asic_index_from_namespace(namespace)
-                for port in port_mux_tbl_keys[asic_id]:
+                for port in natsorted(port_mux_tbl_keys[asic_id]):
                     create_json_dump_per_port_config(port_status_dict, per_npu_configdb, asic_id, port)
 
             click.echo("{}".format(json.dumps(port_status_dict, indent=4)))
@@ -326,7 +327,7 @@ def config(port, json_output):
             print_peer_tor = []
             for namespace in namespaces:
                 asic_id = multi_asic.get_asic_index_from_namespace(namespace)
-                for port in port_mux_tbl_keys[asic_id]:
+                for port in natsorted(port_mux_tbl_keys[asic_id]):
                     create_table_dump_per_port_config(print_data, per_npu_configdb, asic_id, port)
 
             headers = ['SWITCH_NAME', 'PEER_TOR']
