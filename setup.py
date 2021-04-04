@@ -173,7 +173,8 @@ setup(
     tests_require = [
         'pytest',
         'mockredispy>=2.9.3',
-        'sonic-config-engine'
+        'sonic-config-engine',
+        'deepdiff==5.2.3'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
