@@ -8,7 +8,7 @@ import utilities_common.cli as clicommon
 from natsort import natsorted
 from sonic_py_common import multi_asic
 from swsscommon import swsscommon
-from swsscommon.swsscommon import ConfigDBConnector
+from swsssdk import ConfigDBConnector
 from tabulate import tabulate
 from utilities_common import platform_sfputil_helper
 
