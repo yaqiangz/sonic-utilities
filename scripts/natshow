@@ -34,7 +34,7 @@
 
     Protocol  Source             Destination         Translated Source   Translated Destination
     --------  -----------------  ------------------  ------------------  ----------------------
-    all       10.0.0.1           ---                 65.55.45.5          ---  
+    all       10.0.0.1           ---                 65.55.45.5          ---
     all       10.0.0.2           ---                 65.55.45.6          ---
     tcp       20.0.0.1:4500      ---                 65.55.45.7:2000     ---
     udp       20.0.0.1:4000      ---                 65.55.45.7:1030     ---
@@ -134,7 +134,7 @@ class NatShow(object):
             translated_dst = "---"
             translated_src = "---"
 
-            ent = self.asic_db.get_all('ASIC_DB', s, blocking=True)
+            ent = self.asic_db.get_all('ASIC_DB', nat_entry, blocking=True)
 
             nat_type = nat['nat_type']
 
@@ -190,7 +190,7 @@ class NatShow(object):
                 destination = destination_ip + ":" + destination_port
             else:
                 destination = destination_ip
-            
+
             if (protocol == "6"):
                 ip_protocol = "tcp"
             elif (protocol == "17"):
@@ -231,7 +231,7 @@ class NatShow(object):
                     else:
                         destination = nat_keys[0]
 
-                    counter_entry = self.counters_db.get_all(self.counters_db.COUNTERS_DB, 'COUNTERS_NAT:{}'.format(nat_entry)) 
+                    counter_entry = self.counters_db.get_all(self.counters_db.COUNTERS_DB, 'COUNTERS_NAT:{}'.format(nat_entry))
                     packets = counter_entry['NAT_TRANSLATIONS_PKTS']
                     byte = counter_entry['NAT_TRANSLATIONS_BYTES']
 
@@ -382,7 +382,7 @@ def main():
     parser.add_argument('-c', '--count', action='store_true', help='Show the nat translations count')
 
     args = parser.parse_args()
-    
+
     show_translations = args.translations
     show_statistics = args.statistics
     show_count = args.count
