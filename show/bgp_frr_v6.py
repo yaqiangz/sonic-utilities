@@ -36,7 +36,7 @@ def neighbors(ipaddress, info_type):
     """Show IPv6 BGP neighbors"""
     ipaddress = "" if ipaddress is None else ipaddress
     info_type = "" if info_type is None else info_type
-    command = 'sudo vtysh -c "show bgp ipv6 neighbor {} {}"'.format(ipaddress, info_type)
+    command = 'sudo {} -c "show bgp ipv6 neighbor {} {}"'.format(constants.RVTYSH_COMMAND, ipaddress, info_type)
     run_command(command)
 
 # 'network' subcommand ("show ipv6 bgp network")
@@ -47,7 +47,7 @@ def neighbors(ipaddress, info_type):
 def network(ipaddress, info_type):
     """Show BGP ipv6 network"""
 
-    command = 'sudo vtysh -c "show bgp ipv6'
+    command = 'sudo {} -c "show bgp ipv6'.format(constants.RVTYSH_COMMAND)
 
     if ipaddress is not None:
         if '/' in ipaddress:
