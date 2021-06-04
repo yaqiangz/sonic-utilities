@@ -94,10 +94,10 @@ tacacs.add_command(default)
 
 
 @click.command()
-@click.argument('second', metavar='<time_second>', type=click.IntRange(0, 60), required=False)
+@click.argument('second', metavar='<time_second>', type=click.IntRange(1, 60), required=False)
 @click.pass_context
 def timeout(ctx, second):
-    """Specify TACACS+ server global timeout <0 - 60>"""
+    """Specify TACACS+ server global timeout <1 - 60>"""
     if ctx.obj == 'default':
         del_table_key('TACPLUS', 'global', 'timeout')
     elif second:
