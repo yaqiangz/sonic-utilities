@@ -9,7 +9,7 @@ from swsssdk import ConfigDBConnector
 
 from .mock_tables import dbconnector
 from . import show_ip_route_common
-import utilities_common.constants as constantsn
+import utilities_common.constants as constants
 
 test_path = os.path.dirname(os.path.abspath(__file__))
 modules_path = os.path.dirname(test_path)
