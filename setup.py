@@ -113,6 +113,7 @@ setup(
         'scripts/route_check_test.sh',
         'scripts/vnet_route_check.py',
         'scripts/sfpshow',
+        'scripts/soft-reboot',
         'scripts/storyteller',
         'scripts/syseeprom-to-json',
         'scripts/tempershow',
