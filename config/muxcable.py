@@ -23,7 +23,6 @@ VENDOR_MODEL_REGEX = re.compile(r"CAC\w{3}321P2P\w{2}MS")
 
 # Helper functions
 
-
 def get_value_for_key_in_dict(mdict, port, key, table_name):
     value = mdict.get(key, None)
     if value is None:
@@ -91,8 +90,11 @@ def lookup_statedb_and_update_configdb(per_npu_statedb, config_db, port, state_c
 @click.argument('state', metavar='<operation_status>', required=True, type=click.Choice(["active", "auto", "manual"]))
 @click.argument('port', metavar='<port_name>', required=True, default=None)
 @click.option('--json', 'json_output', required=False, is_flag=True, type=click.BOOL)
-def mode(state, port, json_output):
+@clicommon.pass_db
+def mode(db, state, port, json_output):
     """Config muxcable mode"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     port_table_keys = {}
     y_cable_asic_table_keys = {}
@@ -259,8 +261,11 @@ def hwmode():
 @hwmode.command()
 @click.argument('state', metavar='<operation_status>', required=True, type=click.Choice(["active", "standby"]))
 @click.argument('port', metavar='<port_name>', required=True, default=None)
-def state(state, port):
+@clicommon.pass_db
+def state(db, state, port):
     """Configure the muxcable mux state {active/standby}"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     per_npu_statedb = {}
     transceiver_table_keys = {}
@@ -458,8 +463,11 @@ def state(state, port):
 @hwmode.command()
 @click.argument('state', metavar='<operation_status>', required=True, type=click.Choice(["auto", "manual"]))
 @click.argument('port', metavar='<port_name>', required=True, default=None)
-def setswitchmode(state, port):
+@clicommon.pass_db
+def setswitchmode(db, state, port):
     """Configure the muxcable mux switching mode {auto/manual}"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     per_npu_statedb = {}
     transceiver_dict = {}
@@ -702,8 +710,11 @@ def firmware():
 @firmware.command()
 @click.argument('fwfile', metavar='<firmware_file>', required=True)
 @click.argument('port', metavar='<port_name>', required=True, default=None)
-def download(fwfile, port):
+@clicommon.pass_db
+def download(db, fwfile, port):
     """Config muxcable firmware download"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     per_npu_statedb = {}
     y_cable_asic_table_keys = {}
@@ -752,8 +763,11 @@ def download(fwfile, port):
 
 @firmware.command()
 @click.argument('port', metavar='<port_name>', required=True, default=None)
-def activate(port):
+@clicommon.pass_db
+def activate(db, port):
     """Config muxcable firmware activate"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     per_npu_statedb = {}
     y_cable_asic_table_keys = {}
@@ -801,8 +815,11 @@ def activate(port):
 
 @firmware.command()
 @click.argument('port', metavar='<port_name>', required=True, default=None)
-def rollback(port):
+@clicommon.pass_db
+def rollback(db, port):
     """Config muxcable firmware rollback"""
+
+    port = platform_sfputil_helper.get_interface_alias(port, db)
 
     port_table_keys = {}
     y_cable_asic_table_keys = {}
