@@ -3037,6 +3037,7 @@ Subsequent pages explain each of these commands in detail.
     -?, -h, --help  Show this message and exit.
 
   Commands:
+  autoneg      Show interface autoneg information
   breakout     Show Breakout Mode information by interfaces
   counters     Show interface counters
   description  Show interface status, protocol and...
@@ -3045,6 +3046,30 @@ Subsequent pages explain each of these commands in detail.
   portchannel  Show PortChannel information
   status       Show Interface status information
   transceiver  Show SFP Transceiver information
+  ```
+
+**show interfaces autoneg**
+
+This show command displays the port auto negotiation status for all interfaces i.e. interface name, auto negotiation mode, speed, advertised speeds, interface type, advertised interface types, operational status, admin status. For a single interface, provide the interface name with the sub-command.
+
+- Usage:
+  ```
+  show interfaces autoneg status
+  show interfaces autoneg status <interface_name>
+  ```
+
+- Example:
+  ```
+  admin@sonic:~$ show interfaces autoneg status
+    Interface    Auto-Neg Mode    Speed    Adv Speeds    Type    Adv Types    Oper    Admin
+  -----------  ---------------  -------  ------------  ------  -----------  ------  -------
+    Ethernet0          enabled      25G       10G,25G      CR       CR,CR4      up       up
+    Ethernet4         disabled     100G           all     CR4          all      up       up
+
+  admin@sonic:~$ show interfaces autoneg status Ethernet8
+    Interface    Auto-Neg Mode    Speed    Adv Speeds    Type    Adv Types    Oper    Admin
+  -----------  ---------------  -------  ------------  ------  -----------  ------  -------
+    Ethernet8         disabled     100G           N/A     CR4          N/A      up       up
   ```
 
 **show interfaces breakout**
@@ -3353,6 +3378,7 @@ This sub-section explains the following list of configuration on the interfaces.
 4) speed - to set the interface speed
 5) startup - to bring up the administratively shutdown interface
 6) breakout - to set interface breakout mode
+7) autoneg - to set interface auto negotiation mode
 
 From 201904 release onwards, the “config interface” command syntax is changed and the format is as follows:
 
@@ -3683,6 +3709,31 @@ kindly use, double tab i.e. <tab><tab> to see the available breakout option cust
   1x100G[40G]  2x50G        4x25G[10G]
 
   admin@sonic:~$ sudo config interface breakout  Ethernet0 4x25G[10G] -f -l -v -y
+  ```
+
+Go Back To [Beginning of the document](#) or [Beginning of this section](#interfaces)
+
+**config interface autoneg <interface_name> (Versions >= 202012)**
+
+This command is used to set port auto negotiation mode.
+
+- Usage:
+  ```
+  sudo config interface autoneg --help
+  Usage: config interface autoneg [OPTIONS] <interface_name> <mode>
+
+    Set interface auto negotiation mode
+
+  Options:
+    -v, --verbose   Enable verbose output
+    -h, -?, --help  Show this message and exit.
+  ```
+
+- Example:
+  ```
+  admin@sonic:~$ sudo config interface autoneg Ethernet0 enabled
+
+  admin@sonic:~$ sudo config interface autoneg Ethernet0 disabled
   ```
 
 Go Back To [Beginning of the document](#) or [Beginning of this section](#interfaces)

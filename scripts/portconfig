@@ -16,15 +16,32 @@ optional arguments:
   -f     --fec                 port fec mode
   -m     --mtu                 port mtu in bytes
   -n     --namesapce           Namespace name
+  -an    --autoneg             port auto negotiation mode
 """
+import os
 import sys
 import argparse
 import swsssdk
 
+# mock the redis for unit test purposes #
+try:
+    if os.environ["UTILITIES_UNIT_TESTING"] == "1":
+        modules_path = os.path.join(os.path.dirname(__file__), "..")
+        test_path = os.path.join(modules_path, "tests")
+        sys.path.insert(0, modules_path)
+        sys.path.insert(0, test_path)
+        import mock_tables.dbconnector
+except KeyError:
+    pass
+
+from swsscommon.swsscommon import ConfigDBConnector, SonicDBConfig, SonicV2Connector
+
+# APPL_DB constants
 PORT_TABLE_NAME = "PORT"
 PORT_SPEED_CONFIG_FIELD_NAME = "speed"
 PORT_FEC_CONFIG_FIELD_NAME = "fec"
 PORT_MTU_CONFIG_FIELD_NAME = "mtu"
+PORT_AUTONEG_CONFIG_FIELD_NAME = "autoneg"
 
 class portconfig(object):
     """
@@ -32,7 +49,7 @@ class portconfig(object):
     """
     def __init__(self, verbose, port, namespace):
         self.verbose = verbose
-
+        self.namespace = namespace
         # Set up db connections
         if namespace is None:
             self.db = swsssdk.ConfigDBConnector()
@@ -66,6 +83,13 @@ class portconfig(object):
             print("Setting mtu %s on port %s" % (mtu, port))
         self.db.mod_entry(PORT_TABLE_NAME, port, {PORT_MTU_CONFIG_FIELD_NAME: mtu})
 
+    def set_autoneg(self, port, mode):
+        if self.verbose:
+            print("Setting autoneg %s on port %s" % (mode, port))
+        mode = 1 if mode == 'enabled' else 0
+        self.db.mod_entry(PORT_TABLE_NAME, port, {PORT_AUTONEG_CONFIG_FIELD_NAME: mode})
+
+
 def main():
     parser = argparse.ArgumentParser(description='Set SONiC port parameters',
                          formatter_class=argparse.RawTextHelpFormatter)
@@ -78,6 +102,8 @@ def main():
     parser.add_argument('-vv', '--verbose', action='store_true', help='Verbose output', default=False)
     parser.add_argument('-n', '--namespace', metavar='namespace details', type = str, required = False,
                         help = 'The asic namespace whose DB instance we need to connect', default=None)
+    parser.add_argument('-an', '--autoneg', type = str, required = False,
+                        help = 'port auto negotiation mode', default=None)
     args = parser.parse_args()
 
     if args.namespace is not None:
@@ -87,13 +113,15 @@ def main():
         port = portconfig(args.verbose, args.port, args.namespace)
         if args.list:
             port.list_params(args.port)
-        elif args.speed or args.fec or args.mtu:
+        elif args.speed or args.fec or args.mtu or args.autoneg:
             if args.speed:
                 port.set_speed(args.port, args.speed)
             if args.fec:
                 port.set_fec(args.port, args.fec)
             if args.mtu:
                 port.set_mtu(args.port, args.mtu)
+            if args.autoneg:
+                port.set_autoneg(args.port, args.autoneg)
         else:
             parser.print_help()
             sys.exit(1)

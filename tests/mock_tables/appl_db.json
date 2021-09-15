@@ -34,7 +34,8 @@
         "pfc_asym": "off",
         "mtu": "9100",
         "fec": "rs",
-        "admin_status": "up"
+        "admin_status": "up",
+        "autoneg": "1"
     },
     "PORT_TABLE:Ethernet32": {
         "index": "8",
@@ -46,7 +47,8 @@
         "pfc_asym": "off",
         "mtu": "9100",
         "fec": "rs",
-        "admin_status": "up"
+        "admin_status": "up",
+        "autoneg": "0"
     },
     "PORT_TABLE:Ethernet112": {
         "index": "28",
