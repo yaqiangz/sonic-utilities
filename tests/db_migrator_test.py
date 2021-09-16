@@ -197,7 +197,7 @@ class TestMellanoxBufferMigrator(object):
         self.mellanox_buffer_migrator_warm_reboot_runner(input_config_db, input_appl_db, expected_config_db, expected_appl_db, False)
 
 
-class TestAutoNegMigrator(object):
+class TestInitConfigMigrator(object):
     @classmethod
     def setup_class(cls):
         os.environ['UTILITIES_UNIT_TESTING'] = "2"
@@ -222,13 +222,3 @@ class TestAutoNegMigrator(object):
         assert not diff
 
         assert not expected_db.cfgdb.get_table('CONTAINER_FEATURE')
-    def test_port_autoneg_migrator(self):
-        dbconnector.dedicated_dbs['CONFIG_DB'] = os.path.join(mock_db_path, 'config_db', 'port-an-input')
-        import db_migrator
-        dbmgtr = db_migrator.DBMigrator(None)
-        dbmgtr.migrate()
-        dbconnector.dedicated_dbs['CONFIG_DB'] = os.path.join(mock_db_path, 'config_db', 'port-an-expected')
-        expected_db = Db()
-
-        assert dbmgtr.configDB.get_table('PORT') == expected_db.cfgdb.get_table('PORT')
-        assert dbmgtr.configDB.get_table('VERSIONS') == expected_db.cfgdb.get_table('VERSIONS')
