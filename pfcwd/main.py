@@ -11,7 +11,7 @@ from sonic_py_common.multi_asic import get_external_ports
 from tabulate import tabulate
 from utilities_common import multi_asic as multi_asic_util
 from utilities_common import constants
-from sonic_py_common import logger
+from sonic_py_common import device_info, logger
 
 SYSLOG_IDENTIFIER = "config"
 
@@ -59,6 +59,7 @@ CONFIG_HEADER = ('PORT',) + list(zip(*CONFIG_DESCRIPTION))[0]
 
 CONFIG_DB_PFC_WD_TABLE_NAME = 'PFC_WD'
 PORT_QOS_MAP =  "PORT_QOS_MAP"
+UNSUPPORTED_FORWARD_ACTION_ASICS = ["cisco-8000"]
 
 # Main entrypoint
 @click.group()
@@ -117,6 +118,8 @@ class PfcwdCli(object):
         )
         self.table = []
         self.all_ports = []
+        version_info = device_info.get_sonic_version_info()
+        self.asic_type = version_info.get('asic_type')
 
     @multi_asic_util.run_on_multi_asic
     def collect_stats(self, empty, queues):
@@ -250,7 +253,7 @@ class PfcwdCli(object):
 
     def verify_pfc_enable_status_per_port(self, port, pfcwd_info):
         pfc_status = self.config_db.get_entry(PORT_QOS_MAP, port).get('pfc_enable')
-        if pfc_status is None:
+        if pfc_status is None or pfc_status == "":
             log.log_warning("SKIPPED: PFC is not enabled on port: {}".format(port), also_print_to_console=True)
             return
 
@@ -273,6 +276,10 @@ class PfcwdCli(object):
 
         if len(ports) == 0:
             ports = all_ports
+
+        if action == 'forward' and self.asic_type in UNSUPPORTED_FORWARD_ACTION_ASICS:
+            log.log_warning("SKIPPED: PFC WD 'forward' action not supported on asic '{}'".format(self.asic_type), also_print_to_console=True)
+            return
 
         pfcwd_info = {
             'detection_time': detection_time,
