@@ -1316,11 +1316,6 @@ def load_minigraph(db, no_service_restart):
         clicommon.run_command(command, display_cmd=True)
         client.set(config_db.INIT_INDICATOR, 1)
 
-    # get the device type
-    device_type = _get_device_type()
-    if device_type != 'MgmtToRRouter' and device_type != 'MgmtTsToR' and device_type != 'EPMS':
-        clicommon.run_command("pfcwd start_default", display_cmd=True)
-
     # Update SONiC environmnet file
     update_sonic_environment()
 
@@ -1335,6 +1330,11 @@ def load_minigraph(db, no_service_restart):
 
     # generate QoS and Buffer configs
     clicommon.run_command("config qos reload --no-dynamic-buffer", display_cmd=True)
+
+    # get the device type
+    device_type = _get_device_type()
+    if device_type != 'MgmtToRRouter' and device_type != 'MgmtTsToR' and device_type != 'EPMS':
+        clicommon.run_command("pfcwd start_default", display_cmd=True)
 
     # Write latest db version string into db
     db_migrator='/usr/local/bin/db_migrator.py'
