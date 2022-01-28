@@ -126,6 +126,8 @@ class AclStat(object):
             """
             for table, rule in self.acl_rules:
                 cnt_props = lowercase_keys(self.db.get_all(self.db.COUNTERS_DB, "COUNTERS:%s:%s" % (table, rule)))
+                if not cnt_props:
+                    continue
                 self.acl_counters[table, rule] = cnt_props
 
             if verboseflag:
@@ -141,7 +143,7 @@ class AclStat(object):
         """
         return the counter value or the difference comparing with the saved value in string format
         """
-        if not self.acl_counters[key]:
+        if key not in self.acl_counters:
             return 'N/A'
 
         if key in self.saved_acl_counters:
