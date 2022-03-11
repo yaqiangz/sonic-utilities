@@ -635,5 +635,11 @@
         "Decline": "0",
         "Relay-Forward": "0",
         "Relay-Reply": "0"
+    },
+    "LINK_PROBE_STATS|Ethernet0": {
+        "pck_loss_count": "612",
+        "pck_expected_count": "840",
+        "link_prober_unknown_start": "2022-Jan-26 03:13:05.366900",
+        "link_prober_unknown_end": "2022-Jan-26 03:17:35.446580"
     }
 }
