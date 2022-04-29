@@ -937,7 +937,7 @@ def cache_arp_entries():
     if not cache_err:
         fdb_cache_file = os.path.join(cache_dir, 'fdb.json')
         arp_cache_file = os.path.join(cache_dir, 'arp.json')
-        fdb_filter_cmd = '/usr/local/bin/filter_fdb_entries -f {} -a {} -c /etc/sonic/configdb.json'.format(fdb_cache_file, arp_cache_file)
+        fdb_filter_cmd = '/usr/local/bin/filter_fdb_entries -f {} -a {} -c /etc/sonic/config_db.json'.format(fdb_cache_file, arp_cache_file)
         filter_proc = subprocess.Popen(fdb_filter_cmd, shell=True, text=True, stdout=subprocess.PIPE)
         _, filter_err = filter_proc.communicate()
         if filter_err:
