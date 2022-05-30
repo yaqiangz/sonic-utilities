@@ -68,6 +68,12 @@ def test_mirror_session_add():
         mocked.assert_called_with("test_session", "100.1.1.1", "2.2.2.2", 8, 63, 10, 100, None)
 
 
+        result = runner.invoke(
+                config.config.commands["mirror_session"].commands["add"],
+                ["test_session", "100.1.1.1", "2.2.2.2", "8", "63", "0", "0"])
+
+        mocked.assert_called_with("test_session", "100.1.1.1", "2.2.2.2", 8, 63, 0, 0, None)
+
 
 def test_mirror_session_erspan_add():
     runner = CliRunner()
@@ -129,6 +135,12 @@ def test_mirror_session_erspan_add():
 
         mocked.assert_called_with("test_session", "100.1.1.1", "2.2.2.2", 8, 63, 10, 100, None, None, None)
 
+        result = runner.invoke(
+                config.config.commands["mirror_session"].commands["erspan"].commands["add"],
+                ["test_session", "100.1.1.1", "2.2.2.2", "8", "63", "0", "0"])
+
+        mocked.assert_called_with("test_session", "100.1.1.1", "2.2.2.2", 8, 63, 0, 0, None, None, None)
+
 
 def test_mirror_session_span_add():
     runner = CliRunner()
@@ -144,7 +156,13 @@ def test_mirror_session_span_add():
     with mock.patch('config.main.add_span') as mocked:
         result = runner.invoke(
                 config.config.commands["mirror_session"].commands["span"].commands["add"],
-                ["test_session", "Ethernet0", "Ethernet4", "rx", "100"])
+                ["test_session", "Ethernet8", "Ethernet4", "tx", "100"])
+        
+        mocked.assert_called_with("test_session", "Ethernet8", "Ethernet4", "tx", 100, None)
 
-        mocked.assert_called_with("test_session", "Ethernet0", "Ethernet4", "rx", 100, None)
+        result = runner.invoke(
+                config.config.commands["mirror_session"].commands["span"].commands["add"],
+                ["test_session", "Ethernet0", "Ethernet4", "rx", "0"])
+
+        mocked.assert_called_with("test_session", "Ethernet0", "Ethernet4", "rx", 0, None)
 

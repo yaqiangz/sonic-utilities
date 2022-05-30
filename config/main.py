@@ -1673,7 +1673,7 @@ def gather_session_info(session_info, policer, queue, src_port, direction):
     if policer:
         session_info['policer'] = policer
 
-    if queue:
+    if queue is not None:
         session_info['queue'] = queue
 
     if src_port:
@@ -1699,7 +1699,7 @@ def add_erspan(session_name, src_ip, dst_ip, dscp, ttl, gre_type, queue, policer
             "ttl": ttl
             }
 
-    if gre_type:
+    if gre_type is not None:
         session_info['gre_type'] = gre_type
 
     session_info = gather_session_info(session_info, policer, queue, src_port, direction)
