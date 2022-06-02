@@ -409,6 +409,18 @@ class DBMigrator():
 
         return True
 
+    def migrate_pfcwd_sw_enable_table(self):
+        """ 
+        Migrate "pfc_enable" to "pfc_enable" and "pfcwd_sw_enable"
+        1. pfc_enable means enable pfc on certain queues
+        2. pfcwd_sw_enable means enable PFC software watchdog on certain queues
+        """
+        qos_maps = self.configDB.get_table('PORT_QOS_MAP')
+        for k, v in qos_maps.items():
+            if 'pfc_enable' in v:
+                v['pfcwd_sw_enable'] = v['pfc_enable']
+                self.configDB.set_entry('PORT_QOS_MAP', k, v)
+
     def version_unknown(self):
         """
         version_unknown tracks all SONiC versions that doesn't have a version
@@ -598,6 +610,9 @@ class DBMigrator():
         #    version 2_0_1 has been occupied by 202106
         if self.asic_type == "mellanox":
             self.mellanox_buffer_migrator.mlnx_reclaiming_unused_buffer()
+        
+        # Migrate pfcwd_sw_enable table  
+        self.migrate_pfcwd_sw_enable_table()
 
     def migrate(self):
         version = self.get_version()
