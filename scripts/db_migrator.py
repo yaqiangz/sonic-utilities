@@ -417,7 +417,8 @@ class DBMigrator():
         """
         qos_maps = self.configDB.get_table('PORT_QOS_MAP')
         for k, v in qos_maps.items():
-            if 'pfc_enable' in v:
+            # Skip migration if the key already presents
+            if ('pfcwd_sw_enable' not in v) and ('pfc_enable' in v):
                 v['pfcwd_sw_enable'] = v['pfc_enable']
                 self.configDB.set_entry('PORT_QOS_MAP', k, v)
 

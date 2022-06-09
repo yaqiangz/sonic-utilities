@@ -273,3 +273,4 @@ class TestPfcEnableMigrator(object):
 
         diff = DeepDiff(resulting_table, expected_table, ignore_order=True)
         assert not diff
+
