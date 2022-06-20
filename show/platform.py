@@ -37,7 +37,10 @@ version_info = device_info.get_sonic_version_info()
 if (version_info and version_info.get('asic_type') == 'mellanox'):
     from . import mlnx
     platform.add_command(mlnx.mlnx)
-
+elif version_info and version_info.get("asic_type") == "cisco-8000":
+    from sonic_platform.cli import PLATFORM_CLIS
+    for command in PLATFORM_CLIS:
+        platform.add_command(command)
 
 # 'summary' subcommand ("show platform summary")
 @platform.command()
