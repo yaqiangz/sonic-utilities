@@ -13,7 +13,7 @@ import time
 import itertools
 
 from collections import OrderedDict
-from minigraph import parse_device_desc_xml
+from minigraph import parse_device_desc_xml, minigraph_encoder
 from natsort import natsorted
 from portconfig import get_child_ports
 from socket import AF_INET, AF_INET6
@@ -39,6 +39,12 @@ from . import vlan
 from . import vxlan
 from .config_mgmt import ConfigMgmtDPB
 
+# Using load_source to 'import /usr/local/bin/sonic-cfggen as sonic_cfggen'
+# since /usr/local/bin/sonic-cfggen does not have .py extension.
+from imp import load_source
+load_source('sonic_cfggen', '/usr/local/bin/sonic-cfggen')
+import sonic_cfggen
+
 # mock masic APIs for unit test
 try:
     if os.environ["UTILITIES_UNIT_TESTING"] == "1" or os.environ["UTILITIES_UNIT_TESTING"] == "2":
@@ -63,6 +69,7 @@ ASIC_CONF_FILENAME = 'asic.conf'
 DEFAULT_CONFIG_DB_FILE = '/etc/sonic/config_db.json'
 NAMESPACE_PREFIX = 'asic'
 INTF_KEY = "interfaces"
+DEFAULT_GOLDEN_CONFIG_DB_FILE = '/etc/sonic/golden_config_db.json'
 
 INIT_CFG_FILE = '/etc/sonic/init_cfg.json'
 
@@ -1355,6 +1362,10 @@ def load_minigraph(db, no_service_restart):
                 cfggen_namespace_option = " -n {}".format(namespace)
             clicommon.run_command(db_migrator + ' -o set_version' + cfggen_namespace_option)
 
+    # Load golden_config_db.json
+    if os.path.isfile(DEFAULT_GOLDEN_CONFIG_DB_FILE):
+        override_config_by(DEFAULT_GOLDEN_CONFIG_DB_FILE)
+
     # We first run "systemctl reset-failed" to remove the "failed"
     # status from all services before we attempt to restart them
     if not no_service_restart:
@@ -1402,6 +1413,65 @@ def load_port_config(config_db, port_config_path):
                 'startup' if port_config[port_name]['admin_status'] == 'up' else 'shutdown',
                 port_name), display_cmd=True)
     return
+
+
+def override_config_by(golden_config_path):
+    # Override configDB with golden config
+    clicommon.run_command('config override-config-table {}'.format(
+        golden_config_path), display_cmd=True)
+    return
+
+
+#
+# 'override-config-table' command ('config override-config-table ...')
+#
+@config.command('override-config-table')
+@click.argument('input-config-db', required=True)
+@click.option(
+    '--dry-run', is_flag=True, default=False,
+    help='test out the command without affecting config state'
+)
+@clicommon.pass_db
+def override_config_table(db, input_config_db, dry_run):
+    """Override current configDB with input config."""
+
+    try:
+        # Load golden config json
+        config_input = read_json_file(input_config_db)
+    except Exception as e:
+        click.secho("Bad format: json file broken. {}".format(str(e)),
+                    fg='magenta')
+        sys.exit(1)
+
+    # Validate if the input is dict
+    if not isinstance(config_input, dict):
+        click.secho("Bad format: input_config_db is not a dict",
+                    fg='magenta')
+        sys.exit(1)
+
+    config_db = db.cfgdb
+
+    if dry_run:
+        # Read config from configDB
+        current_config = config_db.get_config()
+        # Serialize to the same format as json input
+        sonic_cfggen.FormatConverter.to_serialized(current_config)
+        # Override current config with golden config
+        for table in config_input:
+            current_config[table] = config_input[table]
+        print(json.dumps(current_config, sort_keys=True,
+                         indent=4, cls=minigraph_encoder))
+    else:
+        # Deserialized golden config to DB recognized format
+        sonic_cfggen.FormatConverter.to_deserialized(config_input)
+        # Delete table from DB then mod_config to apply golden config
+        click.echo("Removing configDB overriden table first ...")
+        for table in config_input:
+            config_db.delete_table(table)
+        click.echo("Overriding input config to configDB ...")
+        data = sonic_cfggen.FormatConverter.output_to_db(config_input)
+        config_db.mod_config(data)
+        click.echo("Overriding completed. No service is restarted.")
 
 #
 # 'hostname' command
