@@ -990,6 +990,10 @@ def config(ctx):
     if asic_type == 'mellanox':
         platform.add_command(mlnx.mlnx)
 
+    if asic_type == 'cisco-8000':
+        from sonic_platform.cli.cisco import cisco
+        platform.add_command(cisco)
+
     # Load the global config file database_global.json once.
     SonicDBConfig.load_sonic_global_db_config()
 
