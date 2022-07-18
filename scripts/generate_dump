@@ -32,6 +32,7 @@ DUMPDIR=/var/dump
 TARDIR=$DUMPDIR/$BASE
 TARFILE=$DUMPDIR/$BASE.tar
 LOGDIR=$DUMPDIR/$BASE/dump
+PLUGINS_DIR=/usr/local/bin/debug-dump
 NUM_ASICS=1
 HOME=${HOME:-/root}
 USER=${USER:-root}
@@ -1215,6 +1216,14 @@ main() {
 
     save_cmd "docker ps -a" "docker.ps"
     save_cmd "docker top pmon" "docker.pmon"
+
+    if [[ -d ${PLUGINS_DIR} ]]; then
+        local -r dump_plugins="$(find ${PLUGINS_DIR} -type f -executable)"
+        for plugin in $dump_plugins; do
+            # save stdout output of plugin and gzip it
+            save_cmd "$plugin" "$(basename $plugin)" true
+        done
+    fi
 
     save_saidump
 
