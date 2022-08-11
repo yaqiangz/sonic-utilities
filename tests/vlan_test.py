@@ -593,6 +593,19 @@ class TestVlan(object):
             assert "Error: fe80:2030:31:24 is invalid IP address" in result.output
             assert mock_run_command.call_count == 0
 
+    def test_config_vlan_add_dhcp_relay_with_invalid_ip_2(self):
+        runner = CliRunner()
+
+        with mock.patch('utilities_common.cli.run_command') as mock_run_command:
+            result = runner.invoke(config.config.commands["vlan"].commands["dhcp_relay"].commands["add"],
+                                   ["1000", "110000"])
+            print(result.exit_code)
+            print(result.output)
+            # traceback.print_tb(result.exc_info[2])
+            assert result.exit_code != 0
+            assert "Error: 110000 is invalid IP address" in result.output
+            assert mock_run_command.call_count == 0
+
     def test_config_vlan_add_dhcp_relay_with_exist_ip(self):
         runner = CliRunner()
 

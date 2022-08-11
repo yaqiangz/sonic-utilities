@@ -1,4 +1,5 @@
 import click
+import ipaddress
 import utilities_common.cli as clicommon
 
 from time import sleep
@@ -198,7 +199,9 @@ def add_vlan_dhcp_relay_destination(db, vid, dhcp_relay_destination_ip):
 
     ctx = click.get_current_context()
 
-    if not clicommon.is_ipaddress(dhcp_relay_destination_ip):
+    try:
+        ipaddress.ip_address(dhcp_relay_destination_ip)
+    except Exception:
         ctx.fail('{} is invalid IP address'.format(dhcp_relay_destination_ip))
 
     vlan_name = 'Vlan{}'.format(vid)
