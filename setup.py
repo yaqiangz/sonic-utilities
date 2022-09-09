@@ -119,6 +119,7 @@ setup(
         'scripts/storyteller',
         'scripts/syseeprom-to-json',
         'scripts/tempershow',
+        'scripts/tunnelstat',
         'scripts/update_json.py',
         'scripts/warm-reboot',
         'scripts/watermarkstat',

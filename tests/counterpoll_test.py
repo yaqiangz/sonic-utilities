@@ -27,6 +27,7 @@ PORT_BUFFER_DROP      60000               enable
 QUEUE_WATERMARK_STAT  default (60000)     enable
 PG_WATERMARK_STAT     default (60000)     enable
 PG_DROP_STAT          10000               enable
+TUNNEL_STAT           3000                enable
 """
 
 class TestCounterpoll(object):

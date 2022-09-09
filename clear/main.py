@@ -203,6 +203,12 @@ def dhcp6relay_counters(interface):
 
 cli.add_command(dhcp6relay_counters)
 
+@cli.command()
+def tunnelcounters():
+    """Clear Tunnel counters"""
+    command = "tunnelstat -c"
+    run_command(command)
+
 #
 # 'clear watermarks
 #
