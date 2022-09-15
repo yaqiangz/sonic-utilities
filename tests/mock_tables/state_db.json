@@ -641,5 +641,74 @@
         "pck_expected_count": "840",
         "link_prober_unknown_start": "2022-Jan-26 03:13:05.366900",
         "link_prober_unknown_end": "2022-Jan-26 03:17:35.446580"
+    },
+    "PORT_TABLE|Ethernet16": {
+        "state": "ok",
+        "netdev_oper_status": "up",
+        "admin_status": "up",
+        "mtu":  "9100",
+        "speed": "100"
+    },
+    "PORT_TABLE|Ethernet36": {
+        "state": "ok",
+        "netdev_oper_status": "up",
+        "admin_status": "up",
+        "mtu":  "9100",
+        "speed": "10"
+    },
+    "PORT_TABLE|Ethernet24": {
+        "state": "ok",
+        "netdev_oper_status": "up",
+        "admin_status": "up",
+        "mtu":  "9100",
+        "speed": "1000"
+    },
+    "LINK_TRAINING|Ethernet0": {
+        "status": "not_trained"
+    },
+    "LINK_TRAINING|Ethernet32": {
+        "status": "trained"
+    },
+    "LINK_TRAINING|Ethernet112": {
+         "status": "off"
+    },
+    "ALL_SERVICE_STATUS|mgmt-framework": {
+      "app_ready_status": "OK",
+      "fail_reason": "-",
+      "service_status": "OK",
+      "update_time": "-"
+    },
+    "ALL_SERVICE_STATUS|swss": {
+      "app_ready_status": "OK",
+      "fail_reason": "-",
+      "service_status": "OK",
+      "update_time": "-"
+    },
+    "ALL_SERVICE_STATUS|bgp": {
+      "app_ready_status": "Down",
+      "fail_reason": "Inactive",
+      "service_status": "Down",
+      "update_time": "-"
+    },
+    "ALL_SERVICE_STATUS|pmon": {
+      "app_ready_status": "OK",
+      "fail_reason": "-",
+      "service_status": "OK",
+      "update_time": "-"
+    },
+    "SYSTEM_READY|SYSTEM_STATE": {
+        "Status":"DOWN"
+    },
+    "VNET_ROUTE_TUNNEL_TABLE|test_v4_in_v4-0|160.162.191.1/32": {
+        "active_endpoints":"100.251.7.1",
+        "state":"active"
+    },
+    "VNET_ROUTE_TUNNEL_TABLE|test_v4_in_v4-0|160.163.191.1/32": {
+        "active_endpoints":"100.251.7.1",
+        "state":"active"
+    },
+    "VNET_ROUTE_TUNNEL_TABLE|Vnet_v6_in_v6-0|fddd:a156:a251::a6:1/128": {
+        "active_endpoints":"fddd:a100:a251::a10:1,fddd:a101:a251::a10:1",
+        "state":"active"
     }
 }
