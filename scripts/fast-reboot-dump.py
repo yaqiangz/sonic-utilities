@@ -13,6 +13,7 @@ import syslog
 import traceback
 import ipaddress
 from builtins import str #for unicode conversion in python2
+from swsscommon import swsscommon
 
 
 ARP_CHUNK = binascii.unhexlify('08060001080006040001') # defines a part of the packet for ARP Request
@@ -266,6 +267,11 @@ def send_garp_nd(neighbor_entries, map_mac_ip_per_vlan):
     src_ifs = {map_mac_ip_per_vlan[vlan_name][dst_mac] for vlan_name, dst_mac, _ in neighbor_entries}
     src_mac_addrs = {src_if:get_iface_mac_addr(src_if) for src_if in src_ifs}
 
+    config_db = swsscommon.ConfigDBConnector()
+    config_db.connect()
+    device_metadata = config_db.get_table('DEVICE_METADATA')
+    subtype = device_metadata['localhost'].get('subtype', '')
+
     # open raw sockets for all required interfaces
     sockets = {}
     for src_if in src_ifs:
@@ -275,10 +281,17 @@ def send_garp_nd(neighbor_entries, map_mac_ip_per_vlan):
     # send arp/ndp packets
     for vlan_name, dst_mac, dst_ip in neighbor_entries:
         src_if = map_mac_ip_per_vlan[vlan_name][dst_mac]
-        if ipaddress.ip_interface(str(dst_ip)).ip.version == 4:
-            send_arp(sockets[src_if], src_mac_addrs[src_if], src_ip_addrs[vlan_name], dst_mac, dst_ip)
+        if subtype and 'dualtor' in subtype.lower():
+            # for non dualtor devices, src mac will be router_mac
+            src_mac = get_iface_mac_addr(vlan_name)
         else:
-            send_ndp(sockets[src_if], src_mac_addrs[src_if], src_ip_addrs[vlan_name], dst_mac, dst_ip)
+            # for dualtor devices, the src mac will be vlan_mac
+            src_mac = src_mac_addrs[src_if]
+
+        if ipaddress.ip_interface(str(dst_ip)).ip.version == 4:
+            send_arp(sockets[src_if], src_mac, src_ip_addrs[vlan_name], dst_mac, dst_ip)
+        else:
+            send_ndp(sockets[src_if], src_mac, src_ip_addrs[vlan_name], dst_mac, dst_ip)
 
     # close the raw sockets
     for s in sockets.values():
