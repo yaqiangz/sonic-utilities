@@ -93,7 +93,7 @@ class TestPgDropstat(object):
         self.test_show_pg_drop_clear()
 
         # simulate 'config reload' to provoke counters recalculation (remove  backup from /tmp folder)
-        result = runner.invoke(config.config.commands["reload"], [ "--no_service_restart", "--disable_arp_cache",  "-y"])
+        result = runner.invoke(config.config.commands["reload"], [ "--no_service_restart", "-y"])
 
         print(result.exit_code)
         print(result.output)
