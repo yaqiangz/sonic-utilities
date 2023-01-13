@@ -119,6 +119,9 @@ def setup_single_bgp_instance(request):
         bgp_mocked_json = os.path.join(
             test_path, 'mock_tables', 'dummy.json')
 
+    def mock_show_bgp_summary_no_neigh(vtysh_cmd, bgp_namespace, vtysh_shell_cmd=constants.RVTYSH_COMMAND):
+        return "{}"
+    
     def mock_run_bgp_command(vtysh_cmd, bgp_namespace, vtysh_shell_cmd=constants.RVTYSH_COMMAND):
         if os.path.isfile(bgp_mocked_json):
             with open(bgp_mocked_json) as json_data:
@@ -148,6 +151,9 @@ def setup_single_bgp_instance(request):
              request.param == 'ipv6_route', request.param == 'ipv6_specific_route']):
         bgp_util.run_bgp_command = mock.MagicMock(
             return_value=mock_run_show_ip_route_commands(request))
+    elif request.param == "show_bgp_summary_no_neigh":
+        bgp_util.run_bgp_command = mock.MagicMock(
+            return_value=mock_show_bgp_summary_no_neigh("", ""))
     else:
         bgp_util.run_bgp_command = mock.MagicMock(
             return_value=mock_run_bgp_command("", ""))
