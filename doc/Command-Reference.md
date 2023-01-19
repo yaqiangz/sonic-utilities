@@ -2350,7 +2350,7 @@ This command is used to delete a configured DHCP Relay Destination IP address or
 
 **config dhcp_relay ipv4 helper add/del**
 
-This command is used to add or delete an IPv4 DHCP Relay helper IP address or multiple IP addresses to a VLAN. Note that more than one DHCP Relay helper IP address can be operated on a VLAN interface.
+This command is used to add or delete IPv4 DHCP Relay helper addresses to a VLAN. Note that more than one DHCP Relay helper addresses can be operated on a VLAN interface.
 
 - Usage:
   ```
@@ -2384,7 +2384,7 @@ This command is used to add or delete an IPv4 DHCP Relay helper IP address or mu
 
 **config dhcp_relay ipv6 destination add/del**
 
-This command is used to add or del an IPv6 DHCP Relay destination IP address or multiple IP addresses to a VLAN. Note that more than one DHCP Relay Destination IP address can be operated on a VLAN interface.
+This command is used to add or del IPv6 DHCP Relay destination addresses to a VLAN. Note that more than one DHCP Relay Destination addresses can be operated on a VLAN interface.
 
 - Usage:
   ```
