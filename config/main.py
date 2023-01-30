@@ -37,6 +37,7 @@ from . import muxcable
 from . import nat
 from . import vlan
 from . import vxlan
+from . import dhcp_relay
 from .config_mgmt import ConfigMgmtDPB
 
 # Using load_source to 'import /usr/local/bin/sonic-cfggen as sonic_cfggen'
@@ -1016,6 +1017,7 @@ config.add_command(muxcable.muxcable)
 config.add_command(nat.nat)
 config.add_command(vlan.vlan)
 config.add_command(vxlan.vxlan)
+config.add_command(dhcp_relay.dhcp_relay)
 
 @config.command()
 @click.option('-y', '--yes', is_flag=True, callback=_abort_if_false,
