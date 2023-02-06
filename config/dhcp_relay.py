@@ -34,9 +34,14 @@ def get_dhcp_servers(db, vlan_name, ctx, table_name, dhcp_servers_str):
     return dhcp_servers, table
 
 
-def add_dhcp_relay(vid, dhcp_relay_ips, db, ip_version):
+def get_dhcp_table_servers_key(ip_version):
     table_name = DHCP_RELAY_TABLE if ip_version == 6 else VLAN_TABLE
     dhcp_servers_str = DHCPV6_SERVERS if ip_version == 6 else DHCPV4_SERVERS
+    return table_name, dhcp_servers_str
+
+
+def add_dhcp_relay(vid, dhcp_relay_ips, db, ip_version):
+    table_name, dhcp_servers_str = get_dhcp_table_servers_key(ip_version)
     vlan_name = "Vlan{}".format(vid)
     ctx = click.get_current_context()
     # Verify ip addresses are valid
@@ -60,15 +65,11 @@ def add_dhcp_relay(vid, dhcp_relay_ips, db, ip_version):
 
     db.cfgdb.set_entry(table_name, vlan_name, table)
     click.echo("Added DHCP relay address [{}] to {}".format(",".join(dhcp_relay_ips), vlan_name))
-    try:
-        dhcp_relay_util.restart_dhcp_relay_service()
-    except SystemExit as e:
-        ctx.fail("Restart service dhcp_relay failed with error {}".format(e))
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
 
 
 def del_dhcp_relay(vid, dhcp_relay_ips, db, ip_version):
-    table_name = DHCP_RELAY_TABLE if ip_version == 6 else VLAN_TABLE
-    dhcp_servers_str = DHCPV6_SERVERS if ip_version == 6 else DHCPV4_SERVERS
+    table_name, dhcp_servers_str = get_dhcp_table_servers_key(ip_version)
     vlan_name = "Vlan{}".format(vid)
     ctx = click.get_current_context()
     # Verify ip addresses are valid
@@ -94,10 +95,7 @@ def del_dhcp_relay(vid, dhcp_relay_ips, db, ip_version):
 
     db.cfgdb.set_entry(table_name, vlan_name, table)
     click.echo("Removed DHCP relay address [{}] from {}".format(",".join(dhcp_relay_ips), vlan_name))
-    try:
-        dhcp_relay_util.restart_dhcp_relay_service()
-    except SystemExit as e:
-        ctx.fail("Restart service dhcp_relay failed with error {}".format(e))
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
 
 
 @click.group(cls=clicommon.AbbreviationGroup, name="dhcp_relay")

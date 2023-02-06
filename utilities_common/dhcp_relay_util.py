@@ -10,3 +10,10 @@ def restart_dhcp_relay_service():
     clicommon.run_command("systemctl stop dhcp_relay", display_cmd=False)
     clicommon.run_command("systemctl reset-failed dhcp_relay", display_cmd=False)
     clicommon.run_command("systemctl start dhcp_relay", display_cmd=False)
+
+
+def handle_restart_dhcp_relay_service():
+    try:
+        restart_dhcp_relay_service()
+    except SystemExit as e:
+        ctx.fail("Restart service dhcp_relay failed with error {}".format(e))

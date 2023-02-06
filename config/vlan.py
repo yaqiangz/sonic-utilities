@@ -227,10 +227,7 @@ def add_vlan_dhcp_relay_destination(db, vid, dhcp_relay_destination_ip):
 
     db.cfgdb.set_entry('VLAN', vlan_name, vlan)
     click.echo("Added DHCP relay destination address {} to {}".format(dhcp_relay_destination_ip, vlan_name))
-    try:
-        dhcp_relay_util.restart_dhcp_relay_service()
-    except SystemExit as e:
-        ctx.fail("Restart service dhcp_relay failed with error {}".format(e))
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
 
 @vlan_dhcp_relay.command('del')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
@@ -271,7 +268,4 @@ def del_vlan_dhcp_relay_destination(db, vid, dhcp_relay_destination_ip):
     
     db.cfgdb.set_entry('VLAN', vlan_name, vlan)
     click.echo("Removed DHCP relay destination address {} from {}".format(dhcp_relay_destination_ip, vlan_name))
-    try:
-        dhcp_relay_util.restart_dhcp_relay_service()
-    except SystemExit as e:
-        ctx.fail("Restart service dhcp_relay failed with error {}".format(e))
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
