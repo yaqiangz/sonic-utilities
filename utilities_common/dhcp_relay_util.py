@@ -16,4 +16,5 @@ def handle_restart_dhcp_relay_service():
     try:
         restart_dhcp_relay_service()
     except SystemExit as e:
+        ctx = click.get_current_context()
         ctx.fail("Restart service dhcp_relay failed with error {}".format(e))
