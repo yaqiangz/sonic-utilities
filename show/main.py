@@ -14,6 +14,7 @@ from swsscommon.swsscommon import SonicV2Connector
 from tabulate import tabulate
 from utilities_common.db import Db
 import utilities_common.constants as constants
+from json.decoder import JSONDecodeError
 
 from . import acl
 from . import bgp_common
@@ -109,6 +110,10 @@ def run_command(command, display_cmd=False, return_cmd=False):
     rc = proc.poll()
     if rc != 0:
         sys.exit(rc)
+
+def get_cmd_output(cmd):
+    proc = subprocess.Popen(cmd, text=True, stdout=subprocess.PIPE)
+    return proc.communicate()[0], proc.returncode
 
 # Global class instance for SONiC interface name to alias conversion
 iface_alias_converter = clicommon.InterfaceAliasConverter()
@@ -1055,8 +1060,25 @@ def runningconfiguration():
 @click.option('--verbose', is_flag=True, help="Enable verbose output")
 def all(verbose):
     """Show full running configuration"""
-    cmd = "sonic-cfggen -d --print-data"
-    run_command(cmd, display_cmd=verbose)
+    cmd = ['sonic-cfggen', '-d', '--print-data']
+    stdout, rc = get_cmd_output(cmd)
+    if rc:
+        click.echo("Failed to get cmd output '{}':rc {}".format(cmd, rc))
+        raise click.Abort()
+
+    try:
+        output = json.loads(stdout)
+    except JSONDecodeError as e:
+        click.echo("Failed to load output '{}':{}".format(cmd, e))
+        raise click.Abort()
+
+    if not multi_asic.is_multi_asic():
+        bgpraw_cmd = [constants.RVTYSH_COMMAND, '-c', 'show running-config']
+        bgpraw, rc = get_cmd_output(bgpraw_cmd)
+        if rc:
+            bgpraw = ""
+        output['bgpraw'] = bgpraw
+    click.echo(json.dumps(output, indent=4))
 
 
 # 'acl' subcommand ("show runningconfiguration acl")
