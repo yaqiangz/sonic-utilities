@@ -37,7 +37,6 @@ def add_vlan(db, vid):
     if clicommon.check_if_vlanid_exist(db.cfgdb, vlan):
         ctx.fail("{} already exists".format(vlan))
 
-    db.cfgdb.set_entry('VLAN', vlan, {'vlanid': vid})
     # set dhcpv4_relay table
     set_dhcp_relay_table('VLAN', db.cfgdb, vlan, {'vlanid': str(vid)})
 
@@ -76,7 +75,6 @@ def del_vlan(db, vid):
         if vxmap_data['vlan'] == 'Vlan{}'.format(vid):
             ctx.fail("vlan: {} can not be removed. First remove vxlan mapping '{}' assigned to VLAN".format(vid, '|'.join(vxmap_key)) )
         
-    db.cfgdb.set_entry('VLAN', 'Vlan{}'.format(vid), None)
     # set dhcpv4_relay table
     set_dhcp_relay_table('VLAN', db.cfgdb, vlan, None)
 
