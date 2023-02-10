@@ -159,14 +159,16 @@ config_add_del_vlan_and_vlan_member_in_alias_mode_output="""\
 
 
 mock_funcs = [None]
+
+
 @pytest.fixture(scope='function')
 def mock_func():
     print("We are mocking")
     mock_funcs[0] = config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service
     config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service = mock.MagicMock(return_value=0)
-    
+
     yield
-    
+
     config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service = mock_funcs[0]
 
 
@@ -346,7 +348,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: PortChannel0001 is a router interface!" in result.output
 
-    def test_config_vlan_with_vxlanmap_del_vlan(self):
+    def test_config_vlan_with_vxlanmap_del_vlan(self, mock_func):
         runner = CliRunner()
         db = Db()
         obj = {'config_db': db.cfgdb}
@@ -612,7 +614,7 @@ class TestVlan(object):
         assert "Error: Ethernet32 is part of portchannel!" in result.output
 
     @pytest.mark.parametrize("ip_version", ["ipv4", "ipv6"])
-    def test_config_add_del_vlan_dhcp_relay(self, ip_version):
+    def test_config_add_del_vlan_dhcp_relay(self, ip_version, mock_func):
         runner = CliRunner()
         db = Db()
 
@@ -629,6 +631,19 @@ class TestVlan(object):
         print(result.exit_code)
         print(result.output)
         assert "Vlan1001" not in db.cfgdb.get_keys(IP_VERSION_PARAMS_MAP[ip_version]["table"])
+
+    @pytest.mark.parametrize("ip_version", ["ipv6"])
+    def test_config_add_exist_vlan_dhcp_relay(self, ip_version):
+        runner = CliRunner()
+        db = Db()
+
+        db.cfgdb.set_entry("DHCP_RELAY", "Vlan1001", {"vlanid": "1001"})
+        # add vlan 1001
+        result = runner.invoke(config.config.commands["vlan"].commands["add"], ["1001"], obj=db)
+        print(result.exit_code)
+        print(result.output)
+        assert result.exit_code != 0
+        assert "DHCPv6 relay config for Vlan1001 already exists" in result.output
 
     @classmethod
     def teardown_class(cls):

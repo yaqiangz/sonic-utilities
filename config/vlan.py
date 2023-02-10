@@ -37,11 +37,16 @@ def add_vlan(db, vid):
     if clicommon.check_if_vlanid_exist(db.cfgdb, vlan):
         ctx.fail("{} already exists".format(vlan))
 
+    if clicommon.check_if_vlanid_exist(db.cfgdb, vlan, "DHCP_RELAY"):
+        ctx.fail("DHCPv6 relay config for {} already exists".format(vlan))
     # set dhcpv4_relay table
     set_dhcp_relay_table('VLAN', db.cfgdb, vlan, {'vlanid': str(vid)})
 
     # set dhcpv6_relay table
-    set_dhcp_relay_table('DHCP_RELAY', db.cfgdb, vlan, {'vlanid': str(vid)})
+    set_dhcp_relay_table('DHCP_RELAY', config_db, vlan, {'vlanid': str(vid)})
+    # We need to restart dhcp_relay service after dhcpv6_relay config change
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
+
 
 @vlan.command('del')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
