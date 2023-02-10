@@ -158,20 +158,6 @@ config_add_del_vlan_and_vlan_member_in_alias_mode_output="""\
 """
 
 
-mock_funcs = [None]
-
-
-@pytest.fixture(scope='function')
-def mock_func():
-    print("We are mocking")
-    mock_funcs[0] = config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service
-    config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service = mock.MagicMock(return_value=0)
-
-    yield
-
-    config.vlan.dhcp_relay_util.handle_restart_dhcp_relay_service = mock_funcs[0]
-
-
 class TestVlan(object):
     _old_run_bgp_command = None
     @classmethod
@@ -348,7 +334,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: PortChannel0001 is a router interface!" in result.output
 
-    def test_config_vlan_with_vxlanmap_del_vlan(self, mock_func):
+    def test_config_vlan_with_vxlanmap_del_vlan(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
         obj = {'config_db': db.cfgdb}
@@ -372,7 +358,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: vlan: 1027 can not be removed. First remove vxlan mapping" in result.output
 
-    def test_config_vlan_del_vlan(self, mock_func):
+    def test_config_vlan_del_vlan(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
         obj = {'config_db':db.cfgdb}
@@ -430,7 +416,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: Ethernet0 is not a member of Vlan1000" in result.output
 
-    def test_config_add_del_vlan_and_vlan_member(self, mock_func):
+    def test_config_add_del_vlan_and_vlan_member(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
 
@@ -473,7 +459,7 @@ class TestVlan(object):
         assert result.exit_code == 0
         assert result.output == show_vlan_brief_output
 
-    def test_config_add_del_vlan_and_vlan_member_in_alias_mode(self, mock_func):
+    def test_config_add_del_vlan_and_vlan_member_in_alias_mode(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
 
@@ -550,7 +536,7 @@ class TestVlan(object):
             assert result.exit_code != 0
             assert "Interface Vlan1001 does not exist" in result.output
 
-    def test_config_vlan_proxy_arp_enable(self, mock_func):
+    def test_config_vlan_proxy_arp_enable(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
 
@@ -562,7 +548,7 @@ class TestVlan(object):
         assert result.exit_code == 0 
         assert db.cfgdb.get_entry("VLAN_INTERFACE", "Vlan1000") == {"proxy_arp": "enabled"}
 
-    def test_config_vlan_proxy_arp_disable(self, mock_func):
+    def test_config_vlan_proxy_arp_disable(self, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
 
@@ -614,7 +600,7 @@ class TestVlan(object):
         assert "Error: Ethernet32 is part of portchannel!" in result.output
 
     @pytest.mark.parametrize("ip_version", ["ipv4", "ipv6"])
-    def test_config_add_del_vlan_dhcp_relay(self, ip_version, mock_func):
+    def test_config_add_del_vlan_dhcp_relay(self, ip_version, mock_restart_dhcp_relay_service):
         runner = CliRunner()
         db = Db()
 
