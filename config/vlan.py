@@ -14,6 +14,11 @@ def vlan():
     """VLAN-related configuration tasks"""
     pass
 
+
+def set_dhcp_relay_table(table, config_db, vlan_name, value):
+    config_db.set_entry(table, vlan_name, value)
+
+
 @vlan.command('add')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
 @clicommon.pass_db
@@ -28,8 +33,17 @@ def add_vlan(db, vid):
     vlan = 'Vlan{}'.format(vid)
     if clicommon.check_if_vlanid_exist(db.cfgdb, vlan):
         ctx.fail("{} already exists".format(vlan))
+    if clicommon.check_if_vlanid_exist(db.cfgdb, vlan, "DHCP_RELAY"):
+        ctx.fail("DHCPv6 relay config for {} already exists".format(vlan))
 
-    db.cfgdb.set_entry('VLAN', vlan, {'vlanid': vid})
+    # set dhcpv4_relay table
+    set_dhcp_relay_table('VLAN', db.cfgdb, vlan, {'vlanid': str(vid)})
+
+    # set dhcpv6_relay table
+    set_dhcp_relay_table('DHCP_RELAY', db.cfgdb, vlan, {'vlanid': str(vid)})
+    # We need to restart dhcp_relay service after dhcpv6_relay config change
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
+
 
 @vlan.command('del')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
@@ -55,11 +69,18 @@ def del_vlan(db, vid):
             ctx.fail("{} can not be removed. First remove IP addresses assigned to this VLAN".format(vlan))
 
     keys = [ (k, v) for k, v in db.cfgdb.get_table('VLAN_MEMBER') if k == 'Vlan{}'.format(vid) ]
-    
+
     if keys:
         ctx.fail("VLAN ID {} can not be removed. First remove all members assigned to this VLAN.".format(vid))
-        
-    db.cfgdb.set_entry('VLAN', 'Vlan{}'.format(vid), None)
+
+    # set dhcpv4_relay table
+    set_dhcp_relay_table('VLAN', db.cfgdb, vlan, None)
+
+    # set dhcpv6_relay table
+    set_dhcp_relay_table('DHCP_RELAY', db.cfgdb, vlan, None)
+    # We need to restart dhcp_relay service after dhcpv6_relay config change
+    dhcp_relay_util.handle_restart_dhcp_relay_service()
+
 
 def restart_ndppd():
     verify_swss_running_cmd = "docker container inspect -f '{{.State.Status}}' swss"
