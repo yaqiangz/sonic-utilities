@@ -331,7 +331,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: PortChannel0001 is a router interface!" in result.output
 
-    def test_config_vlan_with_vxlanmap_del_vlan(self, mock_restart_dhcp_relay_service):
+    def test_config_vlan_with_vxlanmap_del_vlan(self):
         runner = CliRunner()
         db = Db()
         obj = {'config_db': db.cfgdb}
@@ -355,7 +355,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: vlan: 1027 can not be removed. First remove vxlan mapping" in result.output
 
-    def test_config_vlan_del_vlan(self, mock_restart_dhcp_relay_service):
+    def test_config_vlan_del_vlan(self):
         runner = CliRunner()
         db = Db()
         obj = {'config_db':db.cfgdb}
@@ -413,7 +413,7 @@ class TestVlan(object):
         assert result.exit_code != 0
         assert "Error: Ethernet0 is not a member of Vlan1000" in result.output
 
-    def test_config_add_del_vlan_and_vlan_member(self, mock_restart_dhcp_relay_service):
+    def test_config_add_del_vlan_and_vlan_member(self):
         runner = CliRunner()
         db = Db()
 
@@ -456,7 +456,7 @@ class TestVlan(object):
         assert result.exit_code == 0
         assert result.output == show_vlan_brief_output
 
-    def test_config_add_del_vlan_and_vlan_member_in_alias_mode(self, mock_restart_dhcp_relay_service):
+    def test_config_add_del_vlan_and_vlan_member_in_alias_mode(self):
         runner = CliRunner()
         db = Db()
 
@@ -533,7 +533,7 @@ class TestVlan(object):
             assert result.exit_code != 0
             assert "Interface Vlan1001 does not exist" in result.output
 
-    def test_config_vlan_proxy_arp_enable(self, mock_restart_dhcp_relay_service):
+    def test_config_vlan_proxy_arp_enable(self):
         runner = CliRunner()
         db = Db()
 
@@ -545,7 +545,7 @@ class TestVlan(object):
         assert result.exit_code == 0 
         assert db.cfgdb.get_entry("VLAN_INTERFACE", "Vlan1000") == {"proxy_arp": "enabled"}
 
-    def test_config_vlan_proxy_arp_disable(self, mock_restart_dhcp_relay_service):
+    def test_config_vlan_proxy_arp_disable(self):
         runner = CliRunner()
         db = Db()
 
