@@ -18,6 +18,11 @@ def set_dhcp_relay_table(table, config_db, vlan_name, value):
     config_db.set_entry(table, vlan_name, value)
 
 
+def is_support_dhcp_relay():
+    out, _ = clicommon.run_command("systemctl show dhcp_relay.service --property ActiveState --value", return_cmd=True)
+    return out.strip() == "active"
+
+
 @vlan.command('add')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
 @clicommon.pass_db
@@ -46,7 +51,8 @@ def add_vlan(db, vid):
     # set dhcpv6_relay table
     set_dhcp_relay_table('DHCP_RELAY', db.cfgdb, vlan, None)
     # We need to restart dhcp_relay service after dhcpv6_relay config change
-    dhcp_relay_util.handle_restart_dhcp_relay_service()
+    if is_support_dhcp_relay():
+        dhcp_relay_util.handle_restart_dhcp_relay_service()
 
 
 @vlan.command('del')
@@ -87,7 +93,8 @@ def del_vlan(db, vid):
     # set dhcpv6_relay table
     set_dhcp_relay_table('DHCP_RELAY', db.cfgdb, vlan, None)
     # We need to restart dhcp_relay service after dhcpv6_relay config change
-    dhcp_relay_util.handle_restart_dhcp_relay_service()
+    if is_support_dhcp_relay():
+        dhcp_relay_util.handle_restart_dhcp_relay_service()
 
 
 def restart_ndppd():
