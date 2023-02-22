@@ -602,20 +602,59 @@ class TestVlan(object):
         db = Db()
 
         # add vlan 1001
-        result = runner.invoke(config.config.commands["vlan"].commands["add"], ["1001"], obj=db)
-        print(result.exit_code)
-        print(result.output)
-        assert result.exit_code == 0
+        with mock.patch("utilities_common.dhcp_relay_util.handle_restart_dhcp_relay_service") as mock_handle_restart:
+            result = runner.invoke(config.config.commands["vlan"].commands["add"], ["1001"], obj=db)
+            print(result.exit_code)
+            print(result.output)
+            assert result.exit_code == 0
+            mock_handle_restart.assert_called_once()
+            assert "Restart service dhcp_relay failed with error" not in result.output
 
         exp_output = {"vlanid": "1001"} if ip_version == "ipv4" else {}
         assert db.cfgdb.get_entry(IP_VERSION_PARAMS_MAP[ip_version]["table"], "Vlan1001") == exp_output
 
         # del vlan 1001
-        result = runner.invoke(config.config.commands["vlan"].commands["del"], ["1001"], obj=db)
-        print(result.exit_code)
-        print(result.output)
+        with mock.patch("utilities_common.dhcp_relay_util.handle_restart_dhcp_relay_service") as mock_handle_restart:
+            result = runner.invoke(config.config.commands["vlan"].commands["del"], ["1001"], obj=db)
+            print(result.exit_code)
+            print(result.output)
 
-        assert "Vlan1001" not in db.cfgdb.get_keys(IP_VERSION_PARAMS_MAP[ip_version]["table"])
+            assert result.exit_code == 0
+            assert "Vlan1001" not in db.cfgdb.get_keys(IP_VERSION_PARAMS_MAP[ip_version]["table"])
+            mock_handle_restart.assert_called_once()
+            assert "Restart service dhcp_relay failed with error" not in result.output
+
+    @pytest.mark.parametrize("ip_version", ["ipv4", "ipv6"])
+    def test_config_add_del_vlan_with_not_support_dhcp_relay(self, ip_version):
+        runner = CliRunner()
+        db = Db()
+
+        # add vlan 1001
+        with mock.patch("utilities_common.dhcp_relay_util.handle_restart_dhcp_relay_service") \
+             as mock_restart_dhcp_relay_service:
+            result = runner.invoke(config.config.commands["vlan"].commands["add"], ["1001"], obj=db)
+            print(result.exit_code)
+            print(result.output)
+            assert result.exit_code == 0
+            assert mock_restart_dhcp_relay_service.call_count == 0
+            assert "Restarting DHCP relay service..." not in result.output
+            assert "Restart service dhcp_relay failed with error" not in result.output
+
+        exp_output = {"vlanid": "1001"} if ip_version == "ipv4" else {}
+        assert db.cfgdb.get_entry(IP_VERSION_PARAMS_MAP[ip_version]["table"], "Vlan1001") == exp_output
+
+        # del vlan 1001
+        with mock.patch("utilities_common.dhcp_relay_util.handle_restart_dhcp_relay_service") \
+             as mock_restart_dhcp_relay_service:
+            result = runner.invoke(config.config.commands["vlan"].commands["del"], ["1001"], obj=db)
+            print(result.exit_code)
+            print(result.output)
+
+            assert result.exit_code == 0
+            assert "Vlan1001" not in db.cfgdb.get_keys(IP_VERSION_PARAMS_MAP[ip_version]["table"])
+            assert mock_restart_dhcp_relay_service.call_count == 0
+            assert "Restarting DHCP relay service..." not in result.output
+            assert "Restart service dhcp_relay failed with error" not in result.output
 
     @pytest.mark.parametrize("ip_version", ["ipv6"])
     def test_config_add_exist_vlan_dhcp_relay(self, ip_version):
