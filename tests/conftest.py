@@ -363,11 +363,11 @@ def mock_restart_dhcp_relay_service():
     print("We are mocking restart dhcp_relay")
     origin_funcs = []
     origin_funcs.append(config.vlan.dhcp_relay_util.restart_dhcp_relay_service)
-    origin_funcs.append(config.vlan.is_support_dhcp_relay)
+    origin_funcs.append(config.vlan.is_dhcp_relay_running)
     config.vlan.dhcp_relay_util.restart_dhcp_relay_service = mock.MagicMock(return_value=0)
-    config.vlan.is_support_dhcp_relay = mock.MagicMock(return_value=True)
+    config.vlan.is_dhcp_relay_running = mock.MagicMock(return_value=True)
 
     yield
 
     config.vlan.dhcp_relay_util.restart_dhcp_relay_service = origin_funcs[0]
-    config.vlan.is_support_dhcp_relay = origin_funcs[1]
+    config.vlan.is_dhcp_relay_running = origin_funcs[1]
