@@ -455,5 +455,30 @@ def translations():
     cmd = "natclear -t"
     run_command(cmd)
 
+
+@cli.group(name="dhcp_relay", cls=AliasedGroup)
+def dhcp_relay():
+    """Clear dhcp_relay """
+    pass
+
+
+@dhcp_relay.group(name="ipv6")
+def dhcp_relay_ipv6():
+    pass
+
+
+@dhcp_relay_ipv6.command(name="counters")
+@click.argument("interface", required=False)
+def dhcp_relay_ipv6_counters(interface):
+    """ Clear dhcp_relay_ipv6 message counts """
+
+    if interface:
+        cmd = "show dhcp6relay_counters clear -i " + interface
+    else:
+        cmd = "show dhcp6relay_counters clear"
+
+    run_command(cmd)
+
+
 if __name__ == '__main__':
     cli()
