@@ -1,8 +1,6 @@
 import pytest
 import show.main as show
 from click.testing import CliRunner
-from utilities_common.db import Db
-from unittest import mock
 
 expected_show_dhcpv6_table = """\
 --------  ------------
