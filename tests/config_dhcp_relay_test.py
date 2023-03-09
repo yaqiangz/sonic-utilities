@@ -282,6 +282,7 @@ class TestConfigDhcpRelay(object):
         db = Db()
         table = IP_VER_TEST_PARAM_MAP[ip_version]["table"]
         db.cfgdb.set_entry(table, "Vlan1000", None)
+        db.cfgdb.set_entry(table, "Vlan2000", None)
         assert db.cfgdb.get_entry(table, "Vlan1000") == {}
         assert len(db.cfgdb.get_keys(table)) == 0
 
