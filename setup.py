@@ -93,6 +93,7 @@ setup(
         'scripts/intfutil',
         'scripts/intfstat',
         'scripts/ipintutil',
+        'scripts/lag_keepalive.py',
         'scripts/lldpshow',
         'scripts/log_ssd_health',
         'scripts/mellanox_buffer_migrator.py',
