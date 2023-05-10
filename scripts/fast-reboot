@@ -412,7 +412,7 @@ function load_aboot_secureboot_kernel() {
 
 function load_kernel() {
     # Load kernel into the memory
-    /sbin/kexec -a -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
+    /sbin/kexec -l "$KERNEL_IMAGE" --initrd="$INITRD" --append="$BOOT_OPTIONS"
 }
 
 function unload_kernel()
