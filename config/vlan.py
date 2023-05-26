@@ -1,6 +1,7 @@
 import click
 import utilities_common.cli as clicommon
 import utilities_common.dhcp_relay_util as dhcp_relay_util
+from swsscommon.swsscommon import SonicV2Connector
 
 from time import sleep
 from .utils import log
@@ -64,6 +65,14 @@ def is_dhcpv6_relay_config_exist(db, vlan_name):
         return True
 
 
+def delete_state_db_entry(entry_name):
+    state_db = SonicV2Connector()
+    state_db.connect(state_db.STATE_DB)
+    exists = state_db.exists(state_db.STATE_DB, 'DHCPv6_COUNTER_TABLE|{}'.format(entry_name))
+    if exists:
+        state_db.delete(state_db.STATE_DB, 'DHCPv6_COUNTER_TABLE|{}'.format(entry_name))
+
+
 @vlan.command('del')
 @click.argument('vid', metavar='<vid>', required=True, type=int)
 @click.option('--no_restart_dhcp_relay', is_flag=True, type=click.BOOL, required=False, default=False,
@@ -106,13 +115,16 @@ def del_vlan(db, vid, no_restart_dhcp_relay):
     # set dhcpv4_relay table
     set_dhcp_relay_table('VLAN', db.cfgdb, vlan, None)
 
+    click.echo("Delete state_db info")
+    delete_state_db_entry(vlan)
+
     if not no_restart_dhcp_relay and is_dhcpv6_relay_config_exist(db, vlan):
         # set dhcpv6_relay table
         set_dhcp_relay_table(DHCP_RELAY_TABLE, db.cfgdb, vlan, None)
         # We need to restart dhcp_relay service after dhcpv6_relay config change
         if is_dhcp_relay_running():
             dhcp_relay_util.handle_restart_dhcp_relay_service()
-    
+
     vlans = db.cfgdb.get_keys('VLAN')
     if not vlans:
         docker_exec_cmd = "docker exec -i swss {}"
