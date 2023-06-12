@@ -13,7 +13,7 @@ DHCPV4_SERVERS = "dhcp_servers"
 DHCPv6_COUNTER_TABLE = 'DHCPv6_COUNTER_TABLE'
 
 # DHCPv6 Counter Messages
-messages = ["Unknown", "Solicit", "Advertise", "Request", "Confirm", "Renew", "Rebind", "Reply", "Release", "Decline", "Relay-Forward", "Relay-Reply"]
+messages = ["Unknown", "Solicit", "Advertise", "Request", "Confirm", "Renew", "Rebind", "Reply", "Release", "Decline", "Reconfigure", "Information-Request", "Relay-Forward", "Relay-Reply", "Malformed"]
 config_db = ConfigDBConnector()
 
 
@@ -135,7 +135,7 @@ class DHCPv6_Counter(object):
     def clear_table(self, interface):
         """ Reset all message counts to 0 """
         for msg in messages:
-            self.db.set(self.db.STATE_DB, self.table_name + str(interface), str(msg), '0') 
+            self.db.set(self.db.STATE_DB, self.table_name + str(interface), str(msg), '0')
 
 
 def print_count(counter, intf):

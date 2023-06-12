@@ -15,20 +15,23 @@ Vlan2000  fc02:2000::3
 
 """
 expected_show_dhcpv6_counter = """\
-  Message Type    Vlan1000
---------------  ----------
-       Unknown           0
-       Solicit           0
-     Advertise           0
-       Request           0
-       Confirm           0
-         Renew           0
-        Rebind           0
-         Reply           0
-       Release           0
-       Decline           0
- Relay-Forward           0
-   Relay-Reply           0
+       Message Type    Vlan1000
+-------------------  ----------
+            Unknown           0
+            Solicit           0
+          Advertise           0
+            Request           0
+            Confirm           0
+              Renew           0
+             Rebind           0
+              Reply           0
+            Release           0
+            Decline           0
+        Reconfigure           0
+Information-Request           0
+      Relay-Forward           0
+        Relay-Reply           0
+          Malformed           0
 
 """
 

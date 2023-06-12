@@ -656,8 +656,11 @@
         "Reply": "0",
         "Release": "0",
         "Decline": "0",
+        "Reconfigure": "0",
+        "Information-Request": "0",
         "Relay-Forward": "0",
-        "Relay-Reply": "0"
+        "Relay-Reply": "0",
+	"Malformed": "0"
     },
     "LINK_PROBE_STATS|Ethernet0": {
         "pck_loss_count": "612",
