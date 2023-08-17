@@ -373,7 +373,7 @@ def fake_db_for_migration(fake_metadata_resolver):
         'Azure/docker-test-4',
         '1.5.0',
         description='SONiC Package Manager Test Package #4',
-        default_reference='1.5.0',
+        default_reference=None,
         installed=True,
         built_in=False
     )

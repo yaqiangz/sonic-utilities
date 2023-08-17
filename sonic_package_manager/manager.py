@@ -7,6 +7,7 @@ import pkgutil
 import tempfile
 import yang as ly
 from inspect import signature
+import traceback
 from typing import Any, Iterable, List, Callable, Dict, Optional
 
 import docker
@@ -357,7 +358,12 @@ class PackageManager:
 
         source = self.get_package_source(expression, repotag, tarball)
         package = source.get_package()
+        log.info(f'yaqiangzhu expression: {expression} 62')
+        log.info(f'yaqiangzhu repotag: {repotag} 62')
+        log.info(f'yaqiangzhu tarball: {tarball} 62')
+        log.info(f'yaqiangzhu {package} 62')
 
+        log.info(f'yaqiangzhu {package.name} is_installed: {self.is_installed(package.name)} 20')
         if self.is_installed(package.name):
             self.upgrade_from_source(source, **kwargs)
         else:
@@ -386,6 +392,8 @@ class PackageManager:
 
         package = source.get_package()
         name = package.name
+        log.info(f'yaqiangzhu self.is_installed(name) {self.is_installed(name)} 2')
+
 
         with failure_ignore(force):
             if self.is_installed(name):
@@ -621,6 +629,8 @@ class PackageManager:
 
                 exits.pop_all()
         except Exception as err:
+            info = traceback.format_exc()
+            log.warn(f'upgrade failed: {info}')
             raise PackageUpgradeError(f'Failed to upgrade {new_package.name}: {err}')
         except KeyboardInterrupt:
             raise
@@ -682,79 +692,100 @@ class PackageManager:
         Raises:
             PackageManagerError
         """
+        try:
+            self._check_package_database(old_package_database)
 
-        self._migrate_package_database(old_package_database)
+            def migrate_package(old_package_entry,
+                                new_package_entry):
+                """ Migrate package routine
 
-        def migrate_package(old_package_entry,
-                            new_package_entry):
-            """ Migrate package routine
+                Args:
+                    old_package_entry: Entry in old package database.
+                    new_package_entry: Entry in new package database.
+                """
 
-            Args:
-                old_package_entry: Entry in old package database.
-                new_package_entry: Entry in new package database.
-            """
+                name = new_package_entry.name
+                version = new_package_entry.version
 
-            name = new_package_entry.name
-            version = new_package_entry.version
+                if dockerd_sock:
+                    # dockerd_sock is defined, so use docked_sock to connect to
+                    # dockerd and fetch package image from it.
+                    log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 0')
+                    log.info(f'installing {name} from old docker library')
+                    docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}'))
+                    log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 1')
 
-            if dockerd_sock:
-                # dockerd_sock is defined, so use docked_sock to connect to
-                # dockerd and fetch package image from it.
-                log.info(f'installing {name} from old docker library')
-                docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}'))
+                    image = docker_api.get_image(old_package_entry.image_id)
+                    log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 2')
 
-                image = docker_api.get_image(old_package_entry.image_id)
+                    with tempfile.NamedTemporaryFile('wb') as file:
+                        log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 3')
+                        for chunk in image.save(named=True):
+                            file.write(chunk)
+                        log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 5')
+                        file.flush()
 
-                with tempfile.NamedTemporaryFile('wb') as file:
-                    for chunk in image.save(named=True):
-                        file.write(chunk)
-                    file.flush()
+                        log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 6')
+                        self.install(tarball=file.name)
+                else:
+                    log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 7')
+                    log.info(f'installing {name} version {version}')
 
-                    self.install(tarball=file.name)
-            else:
-                log.info(f'installing {name} version {version}')
+                    log.info(f'yaqiangzhu {old_package_entry} {new_package_entry} 8')
+                    self.install(f'{name}={version}')
 
-                self.install(f'{name}={version}')
+            # TODO: Topological sort packages by their dependencies first.
+            for old_package in old_package_database:
+                if not old_package.installed or old_package.built_in:
+                    continue
 
-        # TODO: Topological sort packages by their dependencies first.
-        for old_package in old_package_database:
-            if not old_package.installed or old_package.built_in:
-                continue
+                log.info(f'migrating package {old_package.name}')
 
-            log.info(f'migrating package {old_package.name}')
+                new_package = self.database.get_package(old_package.name)
 
-            new_package = self.database.get_package(old_package.name)
-
-            if new_package.installed:
-                if old_package.version > new_package.version:
-                    log.info(f'{old_package.name} package version is greater '
-                             f'then installed in new image: '
-                             f'{old_package.version} > {new_package.version}')
-                    log.info(f'upgrading {new_package.name} to {old_package.version}')
+                if new_package.installed:
+                    if old_package.version > new_package.version:
+                        log.info(f'{old_package.name} package version is greater '
+                                f'then installed in new image: '
+                                f'{old_package.version} > {new_package.version}')
+                        log.info(f'upgrading {new_package.name} to {old_package.version}')
+                        new_package.version = old_package.version
+                        log.info('yaqiangzhu 8.5')
+                        migrate_package(old_package, new_package)
+                        log.info('yaqiangzhu 9')
+                    else:
+                        log.info(f'skipping {new_package.name} as installed version is newer')
+                elif new_package.default_reference is not None:
+                    new_package_ref = PackageReference(new_package.name, new_package.default_reference)
+                    package_source = self.get_package_source(package_ref=new_package_ref)
+                    package = package_source.get_package()
+                    new_package_default_version = package.manifest['package']['version']
+                    if old_package.version > new_package_default_version:
+                        log.info(f'{old_package.name} package version is lower '
+                                f'then the default in new image: '
+                                f'{old_package.version} > {new_package_default_version}')
+                        new_package.version = old_package.version
+                        log.info('yaqiangzhu 10')
+                        migrate_package(old_package, new_package)
+                        log.info('yaqiangzhu 11')
+                    else:
+                        log.info('yaqiangzhu 12')
+                        self.install(f'{new_package.name}={new_package_default_version}')
+                        log.info('yaqiangzhu 13')
+                else:
+                    # No default version and package is not installed.
+                    # Migrate old package same version.
+                    log.info('yaqiangzhu new_package.version: {}, old_package.version: {}'.format(new_package.version, old_package.version))
                     new_package.version = old_package.version
                     migrate_package(old_package, new_package)
-                else:
-                    log.info(f'skipping {new_package.name} as installed version is newer')
-            elif new_package.default_reference is not None:
-                new_package_ref = PackageReference(new_package.name, new_package.default_reference)
-                package_source = self.get_package_source(package_ref=new_package_ref)
-                package = package_source.get_package()
-                new_package_default_version = package.manifest['package']['version']
-                if old_package.version > new_package_default_version:
-                    log.info(f'{old_package.name} package version is lower '
-                             f'then the default in new image: '
-                             f'{old_package.version} > {new_package_default_version}')
-                    new_package.version = old_package.version
-                    migrate_package(old_package, new_package)
-                else:
-                    self.install(f'{new_package.name}={new_package_default_version}')
-            else:
-                # No default version and package is not installed.
-                # Migrate old package same version.
-                new_package.version = old_package.version
-                migrate_package(old_package, new_package)
+                    log.info('yaqiangzhu 15')
 
-            self.database.commit()
+                log.info('yaqiangzhu 16')
+                self.database.commit()
+                log.info('yaqiangzhu 17')
+        except Exception:
+            info = traceback.format_exc()
+            log.info(f'Error: {info}')
 
     def get_installed_package(self, name: str) -> Package:
         """ Get installed package by name.
@@ -901,10 +932,10 @@ class PackageManager:
         return [self.get_installed_package(entry.name)
                 for entry in self.database if entry.installed]
 
-    def _migrate_package_database(self, old_package_database: PackageDatabase):
+    def _check_package_database(self, old_package_database: PackageDatabase):
         """ Performs part of package migration process.
-        For every package in  old_package_database that is not listed in current
-        database add a corresponding entry to current database. """
+        Log to warn package in old_package_database that is not listed in current
+        database. """
 
         for package in old_package_database:
             if not self.database.has_package(package.name):
@@ -912,6 +943,7 @@ class PackageManager:
                                           package.repository,
                                           package.description,
                                           package.default_reference)
+                log.warning(f'yaqiangzhu {package.name} {package.repository} {package.description} {package.default_reference}')
 
     def _get_installed_packages_and(self, package: Package) -> Dict[str, Package]:
         """ Returns a dictionary of installed packages with their names as keys
