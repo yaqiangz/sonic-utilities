@@ -5,6 +5,7 @@ import json
 import os
 import sys
 import typing
+import traceback
 
 import click
 import click_log
@@ -455,8 +456,10 @@ def migrate(ctx, database, force, yes, dockerd_socket):
         click.confirm('Continue with package migration?', abort=True, show_default=True)
 
     try:
+        click.echo('yaqiangzhu start to run migrate_packages func')
         manager.migrate_packages(PackageDatabase.from_file(database), dockerd_socket)
     except Exception as err:
+        click.echo(f'yaqiangzhu migrate traceback error: {traceback.format_exc()}')
         exit_cli(f'Failed to migrate packages {err}', fg='red')
     except KeyboardInterrupt:
         exit_cli('Operation canceled by user', fg='red')

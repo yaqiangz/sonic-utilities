@@ -7,6 +7,7 @@ import pkgutil
 import tempfile
 from inspect import signature
 from typing import Any, Iterable, List, Callable, Dict, Optional
+import traceback
 
 import docker
 import filelock
@@ -348,9 +349,11 @@ class PackageManager:
         Raises:
             PackageManagerError
         """
-
+        log.warn('yaqiangzhu in install func')
         source = self.get_package_source(expression, repotag, tarball)
+        log.warn('yaqiangzhu in install func after get source')
         package = source.get_package()
+        log.warn('yaqiangzhu in install func after get package')
 
         if self.is_installed(package.name):
             self.upgrade_from_source(source, **kwargs)
@@ -377,9 +380,11 @@ class PackageManager:
         Raises:
             PackageManagerError
         """
-
+        log.warn('yaqiangzhu in install_from_source func')
         package = source.get_package()
+        log.warn('yaqiangzhu in install_from_source func get package')
         name = package.name
+        log.warn(f'yaqiangzhu in install_from_source func after get name: {name}')
 
         with failure_ignore(force):
             if self.is_installed(name):
@@ -388,12 +393,13 @@ class PackageManager:
         version = package.manifest['package']['version']
         feature_state = 'enabled' if enable else 'disabled'
         installed_packages = self._get_installed_packages_and(package)
+        log.warn(f'yaqiangzhu in install_from_source func after get installed_packages: {installed_packages}')
 
         with failure_ignore(force):
             validate_package_base_os_constraints(package, self.version_info)
             validate_package_tree(installed_packages)
             validate_package_cli_can_be_skipped(package, skip_host_plugins)
-
+        log.warn('yaqiangzhu in install_from_source func after validate')
         # After all checks are passed we proceed to actual installation
 
         # When installing package from a tarball or directly from registry
@@ -408,10 +414,13 @@ class PackageManager:
 
         try:
             with contextlib.ExitStack() as exits:
+                log.warn('yaqiangzhu in install_from_source func before install source')
                 source.install(package)
+                log.warn('yaqiangzhu in install_from_source func after install source')
                 exits.callback(rollback(source.uninstall, package))
 
                 self.service_creator.create(package, **service_create_opts)
+                log.warn('yaqiangzhu in install_from_source func after service create')
                 exits.callback(rollback(self.service_creator.remove, package))
 
                 self.service_creator.generate_shutdown_sequence_files(
@@ -423,19 +432,26 @@ class PackageManager:
                 )
 
                 if not skip_host_plugins:
+                    log.warn('yaqiangzhu in install_from_source func before install cli')
                     self._install_cli_plugins(package)
+                    log.warn('yaqiangzhu in install_from_source func after install cli')
                     exits.callback(rollback(self._uninstall_cli_plugins, package))
-
+                log.warn('yaqiangzhu in install_from_source func before pop all')
                 exits.pop_all()
+                log.warn('yaqiangzhu in install_from_source func after pop all')
         except Exception as err:
+            log.warn(f'yaqiangzhu in install_from_source func traceback: {traceback.format_exc()}')
             raise PackageInstallationError(f'Failed to install {package.name}: {err}')
         except KeyboardInterrupt:
             raise
 
         package.entry.installed = True
         package.entry.version = version
+        log.warn('yaqiangzhu in install_from_source func before update_package')
         self.database.update_package(package.entry)
+        log.warn('yaqiangzhu in install_from_source func after update_package')
         self.database.commit()
+        log.warn('yaqiangzhu in install_from_source func after commit')
 
     @under_lock
     @opt_check
@@ -676,7 +692,7 @@ class PackageManager:
         Raises:
             PackageManagerError
         """
-
+        log.warn('yaqiangzhu in migrate_packages func')
         self._migrate_package_database(old_package_database)
 
         def migrate_package(old_package_entry,
@@ -695,16 +711,25 @@ class PackageManager:
                 # dockerd_sock is defined, so use docked_sock to connect to
                 # dockerd and fetch package image from it.
                 log.info(f'installing {name} from old docker library')
-                docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}'))
+                try:
+                    docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}'))
 
-                image = docker_api.get_image(old_package_entry.image_id)
+                    log.warn('yaqiangzhu in migrate_packages func after get docker_api')
+                    image = docker_api.get_image(old_package_entry.image_id)
+                    log.warn('yaqiangzhu in migrate_packages func after get image')
 
-                with tempfile.NamedTemporaryFile('wb') as file:
-                    for chunk in image.save(named=True):
-                        file.write(chunk)
-                    file.flush()
+                    with tempfile.NamedTemporaryFile('wb') as file:
+                        log.warn('yaqiangzhu in migrate_packages func after tempfile')
+                        for chunk in image.save(named=True):
+                            file.write(chunk)
+                        log.warn('yaqiangzhu in migrate_packages func after write tempfile')
+                        file.flush()
+                        log.warn('yaqiangzhu in migrate_packages func after flush tempfile')
 
-                    self.install(tarball=file.name)
+                        self.install(tarball=file.name)
+                except Exception:
+                    log.warn(f"yaqiangzhu insatll traceback: {traceback.format_exc()}")
+
             else:
                 log.info(f'installing {name} version {version}')
 
