@@ -712,7 +712,7 @@ class PackageManager:
                 # dockerd and fetch package image from it.
                 log.info(f'installing {name} from old docker library')
                 try:
-                    docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}'))
+                    docker_api = DockerApi(docker.DockerClient(base_url=f'unix://{dockerd_sock}', timeout=120))
 
                     log.warn('yaqiangzhu in migrate_packages func after get docker_api')
                     image = docker_api.get_image(old_package_entry.image_id)
